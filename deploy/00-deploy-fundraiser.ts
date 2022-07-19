@@ -9,5 +9,6 @@ const deployFundraiser = async (hre: HardhatRuntimeEnvironment) => {
     args: [],
     log: true,
   });
+  log("-----------------------------------");
 };
 export default deployFundraiser;
