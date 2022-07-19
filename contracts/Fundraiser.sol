@@ -64,9 +64,9 @@ contract Fundraiser is ERC721URIStorage {
     }
 
     function endCampaign(uint256 tokenId) external onlyOwnerOfNFT(tokenId) {
-        _burn(tokenId);
         Campaign memory campaign = s_idToCampaign[tokenId];
         delete s_idToCampaign[tokenId];
+        _burn(tokenId);
         (bool success, ) = msg.sender.call{value: campaign.currAmt}("");
         if (!success) {
             revert Fundraiser__TransferFailed();
