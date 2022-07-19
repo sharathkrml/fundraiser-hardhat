@@ -27,12 +27,11 @@ contract Fundraiser is ERC721URIStorage {
     uint256 private s_tokenId;
     // Events
 
-    event StartCampaign(
-        address indexed owner,
-        uint256 indexed tokenId,
-        uint256 requiredAmt
-    );
-    event Donation(address indexed from, uint256 amount);
+    event StartCampaign(address indexed owner, uint256 indexed tokenId, uint256 requiredAmt);
+    event ExtendCampaign(address indexed owner, uint256 indexed tokenId, uint256 extendAmt);
+    event Donation(address indexed from, uint256 indexed tokenId, uint256 amount);
+    event Withdraw(uint256 indexed tokenId, uint256 withdrawedAmt);
+    event EndCampaign(uint256 indexed tokenId);
 
     constructor() ERC721("Fundraiser Collection", "FRC") {}
 
@@ -57,9 +56,7 @@ contract Fundraiser is ERC721URIStorage {
      * @dev mints a Fundraiser NFT with given metadata &
      * Stores requiredAmt to Struct mapped using tokenId
      */
-    function startCampaign(string calldata _tokenURI, uint256 _requiredAmt)
-        external
-    {
+    function startCampaign(string calldata _tokenURI, uint256 _requiredAmt) external {
         s_tokenId++;
         _safeMint(msg.sender, s_tokenId);
         _setTokenURI(s_tokenId, _tokenURI);
@@ -74,16 +71,9 @@ contract Fundraiser is ERC721URIStorage {
      * @dev mints a Fundraiser NFT with given metadata &
      * Stores requiredAmt to Struct mapped using tokenId
      */
-    function extendCampaign(uint tokenId, uint256 extendAmt)
-        external
-        notClosed(tokenId)
-    {
+    function extendCampaign(uint256 tokenId, uint256 extendAmt) external notClosed(tokenId) {
         s_idToCampaign[s_tokenId].requiredAmt += extendAmt;
-        emit StartCampaign(
-            msg.sender,
-            tokenId,
-            s_idToCampaign[s_tokenId].requiredAmt
-        );
+        emit ExtendCampaign(msg.sender, tokenId, extendAmt);
     }
 
     /**
@@ -103,7 +93,7 @@ contract Fundraiser is ERC721URIStorage {
             revert Fundraiser__OverPayment();
         }
         campaign.currAmt += msg.value;
-        emit Donation(msg.sender, msg.value);
+        emit Donation(msg.sender, tokenId, msg.value);
     }
 
     /**
@@ -127,6 +117,7 @@ contract Fundraiser is ERC721URIStorage {
         if (!success) {
             revert Fundraiser__TransferFailed();
         }
+        emit Withdraw(tokenId, amount);
     }
 
     /**
@@ -134,18 +125,13 @@ contract Fundraiser is ERC721URIStorage {
      * @param tokenId used to identify campaign
      * @dev marks campaign as completed & sends amount to owner
      */
-    function endCampaign(uint256 tokenId)
-        external
-        onlyOwnerOfNFT(tokenId)
-        notClosed(tokenId)
-    {
+    function endCampaign(uint256 tokenId) external onlyOwnerOfNFT(tokenId) notClosed(tokenId) {
         s_idToCampaign[tokenId].completed = true;
-        (bool success, ) = msg.sender.call{
-            value: s_idToCampaign[tokenId].currAmt
-        }("");
+        (bool success, ) = msg.sender.call{value: s_idToCampaign[tokenId].currAmt}("");
         if (!success) {
             revert Fundraiser__TransferFailed();
         }
+        emit EndCampaign(tokenId);
     }
 
     // Getter functions
@@ -154,11 +140,7 @@ contract Fundraiser is ERC721URIStorage {
      * @param tokenId used to identify campaign
      * @dev identify Campaign from s_idToCampaign & return
      */
-    function getCampaign(uint256 tokenId)
-        external
-        view
-        returns (Campaign memory)
-    {
+    function getCampaign(uint256 tokenId) external view returns (Campaign memory) {
         return s_idToCampaign[tokenId];
     }
 

@@ -12,3 +12,5 @@ const deployFundraiser = async (hre: HardhatRuntimeEnvironment) => {
   log("-----------------------------------");
 };
 export default deployFundraiser;
+
+deployFundraiser.tags = ["all"];
