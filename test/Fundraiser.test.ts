@@ -30,7 +30,7 @@ describe("Fundraiser Test", () => {
         })
         it("check requiredAmt", async () => {
             campaign = await fundraiser.getCampaign(1)
-            assert.equal(campaign.requiredAmt, requiredAmt)
+            assert.equal(campaign.requiredAmt.toString(), requiredAmt.toString())
         })
         it("StartCampaign Event", async () => {
             await expect(fundraiser.startCampaign(tokenURI, requiredAmt))
@@ -52,10 +52,39 @@ describe("Fundraiser Test", () => {
             let newRequiredAmt = campaign.requiredAmt
             assert.equal(oldRequiredAmt.add(extendAmt).toString(), newRequiredAmt.toString())
         })
-        it("check ExtendCampaign event", async () => {
+        it("ExtendCampaign event", async () => {
             await expect(fundraiser.extendCampaign(1, extendAmt))
                 .to.emit(fundraiser, "ExtendCampaign")
                 .withArgs(deployer.address, 1, extendAmt)
+        })
+    })
+    describe("donate", () => {
+        let oneEth = ethers.utils.parseEther("1")
+        beforeEach(async () => {
+            await fundraiser.startCampaign(tokenURI, requiredAmt)
+        })
+        it("check Fundraiser__DonatedZero Error", async () => {
+            await expect(fundraiser.connect(user).donate(1)).to.be.revertedWithCustomError(
+                fundraiser,
+                "Fundraiser__DonatedZero"
+            )
+        })
+        it("check Fundraiser__DoesNotExist error", async () => {
+            await expect(
+                fundraiser.connect(user).donate(2, { value: oneEth })
+            ).to.be.revertedWithCustomError(fundraiser, "Fundraiser__DoesNotExist")
+        })
+        it("check Fundraiser__OverPayment error", async () => {
+            await expect(
+                fundraiser.connect(user).donate(1, { value: oneEth.mul(11) })
+            ).to.be.revertedWithCustomError(fundraiser, "Fundraiser__OverPayment")
+        })
+        it("check Donation event ", async () => {
+            await expect(fundraiser.connect(user).donate(1, { value: oneEth.mul(5) }))
+                .to.emit(fundraiser, "Donation")
+                .withArgs(user.address, 1, oneEth.mul(5))
+            let { currAmt } = await fundraiser.getCampaign(1)
+            assert.equal(currAmt.toString(), oneEth.mul(5).toString())
         })
     })
 })
