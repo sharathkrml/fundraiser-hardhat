@@ -42,7 +42,7 @@ contract Fundraiser is ERC721URIStorage {
         }
         _;
     }
-    modifier notClosed(uint256 tokenId) {
+    modifier notCompleted(uint256 tokenId) {
         if (s_idToCampaign[tokenId].completed) {
             revert Fundraiser__Completed();
         }
@@ -71,7 +71,11 @@ contract Fundraiser is ERC721URIStorage {
      * @dev mints a Fundraiser NFT with given metadata &
      * Stores requiredAmt to Struct mapped using tokenId
      */
-    function extendCampaign(uint256 tokenId, uint256 extendAmt) external notClosed(tokenId) {
+    function extendCampaign(uint256 tokenId, uint256 extendAmt)
+        external
+        notCompleted(tokenId)
+        onlyOwnerOfNFT(tokenId)
+    {
         s_idToCampaign[s_tokenId].requiredAmt += extendAmt;
         emit ExtendCampaign(msg.sender, tokenId, extendAmt);
     }
@@ -81,7 +85,7 @@ contract Fundraiser is ERC721URIStorage {
      * @param tokenId used to identify campaign
      * @dev adds up msg.value received to campaign
      */
-    function donate(uint256 tokenId) external payable notClosed(tokenId) {
+    function donate(uint256 tokenId) external payable notCompleted(tokenId) {
         if (msg.value == 0) {
             revert Fundraiser__DonatedZero();
         }
@@ -104,7 +108,7 @@ contract Fundraiser is ERC721URIStorage {
      */
     function withdraw(uint256 tokenId, uint256 amount)
         external
-        notClosed(tokenId)
+        notCompleted(tokenId)
         onlyOwnerOfNFT(tokenId)
     {
         Campaign storage campaign = s_idToCampaign[tokenId];
@@ -125,7 +129,7 @@ contract Fundraiser is ERC721URIStorage {
      * @param tokenId used to identify campaign
      * @dev marks campaign as completed & sends amount to owner
      */
-    function endCampaign(uint256 tokenId) external onlyOwnerOfNFT(tokenId) notClosed(tokenId) {
+    function endCampaign(uint256 tokenId) external onlyOwnerOfNFT(tokenId) notCompleted(tokenId) {
         s_idToCampaign[tokenId].completed = true;
         (bool success, ) = msg.sender.call{value: s_idToCampaign[tokenId].currAmt}("");
         if (!success) {
