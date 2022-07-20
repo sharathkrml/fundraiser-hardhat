@@ -1,13 +1,11 @@
-# Sample Hardhat Project
+# Fundraiser Contract
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
+## _Used to create and run campaigns(as NFT)_
 
-Try running some of the following tasks:
+## Features
 
-```shell
-npx hardhat help
-npx hardhat test
-GAS_REPORT=true npx hardhat test
-npx hardhat node
-npx hardhat run scripts/deploy.ts
-```
+-   Start campaigns & mint it as NFT 🚀
+-   Anyone can donate 💡
+-   Can extend the required amount if needed
+-   Withdraw or end campaign as you wish & get Ether
+-   Non profit,on chain - everything is transparent
