@@ -40,3 +40,23 @@ task("extendcampaign", "Extends a campaign")
             console.log(e.message)
         }
     })
+
+task("getcampaign", "get campaign by id")
+    .addParam("id", "Add tokenId")
+    .setAction(async (taskArgs, hre) => {
+        let fundRaiser: Fundraiser = await hre.ethers.getContract("Fundraiser")
+        try {
+            console.log(await fundRaiser.getCampaign(taskArgs.id))
+        } catch (e: any) {
+            console.log(e.message)
+        }
+    })
+
+task("lasttokenid", "get last token id").setAction(async (taskArgs, hre) => {
+    let fundRaiser: Fundraiser = await hre.ethers.getContract("Fundraiser")
+    try {
+        console.log(await fundRaiser.getLastTokenId())
+    } catch (e: any) {
+        console.log(e.message)
+    }
+})
