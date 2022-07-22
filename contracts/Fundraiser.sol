@@ -30,7 +30,7 @@ contract Fundraiser is ERC721URIStorage {
     event StartCampaign(address indexed owner, uint256 indexed tokenId, uint256 requiredAmt);
     event ExtendCampaign(address indexed owner, uint256 indexed tokenId, uint256 extendAmt);
     event Donation(address indexed from, uint256 indexed tokenId, uint256 amount);
-    event Withdraw(uint256 indexed tokenId, uint256 withdrawedAmt);
+    event Withdraw(uint256 indexed tokenId, address indexed from, uint256 withdrawedAmt);
     event EndCampaign(uint256 indexed tokenId);
 
     constructor() ERC721("Fundraiser Collection", "FRC") {}
@@ -121,7 +121,7 @@ contract Fundraiser is ERC721URIStorage {
         if (!success) {
             revert Fundraiser__TransferFailed();
         }
-        emit Withdraw(tokenId, amount);
+        emit Withdraw(tokenId, msg.sender, amount);
     }
 
     /**
