@@ -2,8 +2,6 @@ import { HardhatUserConfig } from "hardhat/config"
 import "@nomicfoundation/hardhat-toolbox"
 import "hardhat-deploy"
 import "dotenv/config"
-import "./tasks/balance"
-import "./tasks/campaign"
 const getEnv = (name: string) => {
     return process.env[name] || ""
 }
@@ -24,10 +22,16 @@ const config: HardhatUserConfig = {
             url: getEnv("RINKEBY_URL"),
             accounts: [getEnv("PRIVATE_KEY")],
         },
+        mumbai: {
+            chainId: 80001,
+            url: getEnv("MUMBAI_URL"),
+            accounts: [getEnv("PRIVATE_KEY")],
+        },
     },
     etherscan: {
         apiKey: {
             rinkeby: getEnv("ETHERSCAN_KEY"),
+            polygonMumbai: getEnv("POLYGONSCAN_KEY"),
         },
     },
     gasReporter: {
